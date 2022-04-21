@@ -7,36 +7,35 @@ terraform {
   }
 }
 
-# Configure the AWS Provider
 provider "aws" {
-  region = "us-east-1"
+  region = var.region[0]
 }
 
 resource "aws_vpc" "some_custom_vpc" {
   cidr_block = "10.0.0.0/16"
 
   tags = {
-    Name = "Some Custom VPC"
+    Name = "${var.tag_prefix}VPC"
   }
 }
 
 resource "aws_subnet" "some_public_subnet" {
   vpc_id            = aws_vpc.some_custom_vpc.id
   cidr_block        = "10.0.1.0/24"
-  availability_zone = "us-east-1a"
+  availability_zone = var.zone[0]
 
   tags = {
-    Name = "Some Public Subnet"
+    Name = "${var.tag_prefix}public-subnet"
   }
 }
 
 resource "aws_subnet" "some_private_subnet" {
   vpc_id            = aws_vpc.some_custom_vpc.id
   cidr_block        = "10.0.2.0/24"
-  availability_zone = "us-east-1a"
+  availability_zone = var.zone[0]
 
   tags = {
-    Name = "Some Private Subnet"
+    Name = "${var.tag_prefix}private-subnet"
   }
 }
 
@@ -44,7 +43,7 @@ resource "aws_internet_gateway" "some_ig" {
   vpc_id = aws_vpc.some_custom_vpc.id
 
   tags = {
-    Name = "Some Internet Gateway"
+    Name = "${var.tag_prefix}internet-gateway"
   }
 }
 
@@ -62,7 +61,7 @@ resource "aws_route_table" "public_rt" {
   }
 
   tags = {
-    Name = "Public Route Table"
+    Name = "${var.tag_prefix}route-table"
   }
 }
 
@@ -99,22 +98,15 @@ resource "aws_security_group" "web_sg" {
 resource "aws_instance" "web_instance" {
   ami           = "ami-0533f2ba8a1995cf9"
   instance_type = "t2.nano"
-  key_name      = "MyKeyPair"
+  key_name      = var.key_name
 
   subnet_id                   = aws_subnet.some_public_subnet.id
   vpc_security_group_ids      = [aws_security_group.web_sg.id]
   associate_public_ip_address = true
 
-  user_data = <<-EOF
-  #!/bin/bash -ex
-
-  amazon-linux-extras install nginx1 -y
-  echo "<h1>$(curl https://api.kanye.rest/?format=text)</h1>" >  /usr/share/nginx/html/index.html
-  systemctl enable nginx
-  systemctl start nginx
-  EOF
+  user_data = var.user_data
 
   tags = {
-    "Name" : "Kanye"
+    "Name" : var.instance_name
   }
 }

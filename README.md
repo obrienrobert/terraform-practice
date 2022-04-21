@@ -1,2 +1,2 @@
 # Terraform Practice
-A place to store everything terraform related. First stop is following [this](https://sammeechward.com/terraform-vpc-subnets-ec2-and-more/) tutorial.
+A place to store everything terraform related. First stop is following [this](https://sammeechward.com/terraform-vpc-subnets-ec2-and-more/) tutorial. The next task is to use a `variables.tf` to learn about variables and how they are used.
